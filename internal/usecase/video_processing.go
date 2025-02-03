@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"fmt"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/mysql"
 	"github.com/hackton-video-processing/processamento/pkg/zip"
 	"io"
 	"log"
@@ -16,6 +17,7 @@ import (
 type (
 	VideoProcessing struct {
 		s3Client        *s3.S3Client
+		repository      mysql.Repository
 		notificationAPI string
 	}
 
@@ -24,9 +26,10 @@ type (
 	}
 )
 
-func NewVideoProcessing(s3Client *s3.S3Client) *VideoProcessing {
+func NewVideoProcessing(s3Client *s3.S3Client, repository *mysql.Repository) *VideoProcessing {
 	return &VideoProcessing{
-		s3Client: s3Client,
+		s3Client:   s3Client,
+		repository: *repository,
 	}
 }
 

@@ -11,6 +11,7 @@ type AppConfig struct {
 	Port                  string
 	KafkaConfig           MSKConfig
 	S3Config              S3Config
+	MySQL                 MySQLConfig
 	VideoProcessingConfig VideoProcessingConfig
 }
 
@@ -20,6 +21,7 @@ func LoadConfiguration() (AppConfig, error) {
 		Port:                  GetPort(),
 		KafkaConfig:           NewMSKConfig(),
 		S3Config:              NewS3Config(),
+		MySQL:                 NewMySQLConfig(),
 		VideoProcessingConfig: NewVideoProcessingConfig(),
 	}, nil
 }

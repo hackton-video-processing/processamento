@@ -1,6 +1,8 @@
 package bootstrap
 
 import (
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/api/createprocess"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/api/getprocessbyid"
 	"log"
 
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
@@ -18,8 +20,22 @@ func createAPIRoutes(app *chi.Mux, appConfig config.AppConfig) error {
 		return err
 	}
 
-	// Registrando a rota
+	createProcessHandler, err := createprocess.BootStrapCreateProcess(appConfig)
+	if err != nil {
+		return err
+	}
+
+	getProcessByIDHandler, err := getprocessbyid.BootstrapGetProcessBtID(appConfig)
+	if err != nil {
+		return err
+	}
+
+	// health check
 	app.Post("/api/health-check", healtchCheckHandler.HealthCheck)
+
+	// endpoints
+	app.Post("/api/process", createProcessHandler.CreateProcess)
+	app.Get("/api/process/{id}", getProcessByIDHandler.GetProcessByID)
 
 	return nil
 }
