@@ -16,11 +16,11 @@ func NewCreateProcess(repository *mysql.Repository) *CreateProcess {
 	}
 }
 
-func (c *CreateProcess) Execute(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) error {
-	err := c.repository.Create(ctx, videoProcessing)
+func (c *CreateProcess) Execute(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) (string, error) {
+	processID, err := c.repository.Create(ctx, videoProcessing)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return processID, nil
 }

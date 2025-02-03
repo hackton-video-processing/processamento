@@ -9,6 +9,8 @@ import (
 
 type UseCase struct {
 	appConfig config.AppConfig
+	s3Client  *s3.S3Client
+	*mysql.Repository
 }
 
 func (u UseCase) Health() (*usecase.HealthCheck, error) {
@@ -16,44 +18,21 @@ func (u UseCase) Health() (*usecase.HealthCheck, error) {
 }
 
 func (u UseCase) CreateProcess() (*usecase.CreateProcess, error) {
-	repository, err := u.BootstrapMySQLRepository()
-	if err != nil {
-		return nil, err
-	}
-
-	return usecase.NewCreateProcess(repository), nil
+	return usecase.NewCreateProcess(u.Repository), nil
 }
 
 func (u UseCase) GetProcessByID() (*usecase.GetProcessByID, error) {
-	repository, err := u.BootstrapMySQLRepository()
-	if err != nil {
-		return nil, err
-	}
-
-	return usecase.NewGetProcessByID(repository), nil
+	return usecase.NewGetProcessByID(u.Repository), nil
 }
 
 func (u UseCase) Process() (*usecase.VideoProcessing, error) {
-	s3Client := u.BootstrapS3Client()
-
-	repository, err := u.BootstrapMySQLRepository()
-	if err != nil {
-		return nil, err
-	}
-
-	return usecase.NewVideoProcessing(s3Client, repository), nil
+	return usecase.NewVideoProcessing(u.s3Client, u.Repository, u.appConfig.VideoProcessingConfig.MaxVideoProcessing), nil
 }
 
-func (u UseCase) BootstrapS3Client() *s3.S3Client {
-	return s3.BootstrapS3(u.appConfig)
-}
-
-func (u UseCase) BootstrapMySQLRepository() (*mysql.Repository, error) {
-	return mysql.BootstrapMySQLRepository(u.appConfig)
-}
-
-func New(appConfig config.AppConfig) UseCase {
+func New(appConfig config.AppConfig, s3Client *s3.S3Client, repository *mysql.Repository) UseCase {
 	return UseCase{
-		appConfig: appConfig,
+		appConfig:  appConfig,
+		s3Client:   s3Client,
+		Repository: repository,
 	}
 }

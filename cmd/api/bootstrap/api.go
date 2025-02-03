@@ -3,29 +3,29 @@ package bootstrap
 import (
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/api/createprocess"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/api/getprocessbyid"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/catalog"
 	"log"
 
-	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/api/healthcheck"
 
 	"github.com/go-chi/chi/v5"
 )
 
-func createAPIRoutes(app *chi.Mux, appConfig config.AppConfig) error {
+func createAPIRoutes(app *chi.Mux, catalog catalog.UseCase) error {
 	log.Println("Creating api routes")
 
 	// Inicializando o handler
-	healtchCheckHandler, err := healthcheck.BootStrapHealth(appConfig)
+	healtchCheckHandler, err := healthcheck.BootStrapHealth(catalog)
 	if err != nil {
 		return err
 	}
 
-	createProcessHandler, err := createprocess.BootStrapCreateProcess(appConfig)
+	createProcessHandler, err := createprocess.BootStrapCreateProcess(catalog)
 	if err != nil {
 		return err
 	}
 
-	getProcessByIDHandler, err := getprocessbyid.BootstrapGetProcessBtID(appConfig)
+	getProcessByIDHandler, err := getprocessbyid.BootstrapGetProcessBtID(catalog)
 	if err != nil {
 		return err
 	}

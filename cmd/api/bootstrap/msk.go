@@ -3,17 +3,17 @@ package bootstrap
 import (
 	"log"
 
-	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/catalog"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/msk"
 
 	"github.com/go-chi/chi/v5"
 )
 
-func createMSKConsumerRoutes(app *chi.Mux, appConfig config.AppConfig) error {
+func createMSKConsumerRoutes(app *chi.Mux, catalog catalog.UseCase) error {
 	log.Println("Creating msk routes")
 
 	// Inicializando o handler
-	videoProcessingHandler, err := msk.BootStrapVideoProcessing(appConfig)
+	videoProcessingHandler, err := msk.BootStrapVideoProcessing(catalog)
 	if err != nil {
 		return err
 	}

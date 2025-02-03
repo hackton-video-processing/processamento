@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
 	"github.com/hackton-video-processing/processamento/internal/usecase"
 )
 
@@ -14,14 +13,12 @@ type (
 	}
 
 	VideoProcessingHandler struct {
-		appConfig              config.AppConfig
 		videoProcessingUseCase videoProcessingUseCase
 	}
 )
 
-func NewVideoProcessingHandler(appConfig config.AppConfig, videoProcessingUseCase videoProcessingUseCase) *VideoProcessingHandler {
+func NewVideoProcessingHandler(videoProcessingUseCase videoProcessingUseCase) *VideoProcessingHandler {
 	return &VideoProcessingHandler{
-		appConfig:              appConfig,
 		videoProcessingUseCase: videoProcessingUseCase,
 	}
 }

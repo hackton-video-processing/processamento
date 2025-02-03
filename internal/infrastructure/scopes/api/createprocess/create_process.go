@@ -9,7 +9,7 @@ import (
 
 type (
 	createProcessUseCase interface {
-		Execute(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) error
+		Execute(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) (string, error)
 	}
 
 	CreateProcessHandler struct {
@@ -41,12 +41,13 @@ func (h *CreateProcessHandler) CreateProcess(w http.ResponseWriter, r *http.Requ
 	}
 
 	ctx := r.Context()
-	if err := h.createProcessUseCase.Execute(ctx, videoprocessing.NewVideoProcessing(req.Files)); err != nil {
+	processID, err := h.createProcessUseCase.Execute(ctx, videoprocessing.NewVideoProcessing(req.Files))
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"message": "process created successfully"})
+	json.NewEncoder(w).Encode(map[string]string{"message": "process created successfully", "id": processID})
 }

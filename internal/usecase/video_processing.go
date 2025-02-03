@@ -18,6 +18,7 @@ type (
 	VideoProcessing struct {
 		s3Client        *s3.S3Client
 		repository      mysql.Repository
+		maxConcurrency  int
 		notificationAPI string
 	}
 
@@ -26,16 +27,17 @@ type (
 	}
 )
 
-func NewVideoProcessing(s3Client *s3.S3Client, repository *mysql.Repository) *VideoProcessing {
+func NewVideoProcessing(s3Client *s3.S3Client, repository *mysql.Repository, maxConcurrency int) *VideoProcessing {
 	return &VideoProcessing{
-		s3Client:   s3Client,
-		repository: *repository,
+		s3Client:       s3Client,
+		repository:     *repository,
+		maxConcurrency: maxConcurrency,
 	}
 }
 
 func (v *VideoProcessing) Execute(req VideoProcessingRequest) error {
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, 3) // Limita a 3 vídeos sendo processados simultaneamente
+	sem := make(chan struct{}, v.maxConcurrency) // Limita a 3 vídeos sendo processados simultaneamente
 
 	for _, videoKey := range req.VideoKeys {
 		wg.Add(1)

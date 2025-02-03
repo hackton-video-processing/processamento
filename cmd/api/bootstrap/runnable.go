@@ -2,6 +2,9 @@ package bootstrap
 
 import (
 	"fmt"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/mysql"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/s3"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/scopes/catalog"
 	"log"
 	"net/http"
 
@@ -18,6 +21,15 @@ func CreateApplication() (*http.Server, error) {
 		return nil, fmt.Errorf("error loading configuration: %w", err)
 	}
 
+	s3Client := s3.BootstrapS3(appConfig)
+
+	db, err := mysql.BootstrapMySQLRepository(appConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error bootstrapping MySQL repository: %w", err)
+	}
+
+	usecaseCatalog := catalog.New(appConfig, s3Client, db)
+
 	// Criar roteador
 	router := chi.NewRouter()
 
@@ -28,7 +40,7 @@ func CreateApplication() (*http.Server, error) {
 	router.Use(middleware.Timeout(60 * 1e9)) // Define timeout de requisições
 
 	// Configurar rotas
-	err = SetupRoutes(router, appConfig)
+	err = SetupRoutes(router, usecaseCatalog)
 	if err != nil {
 		return nil, fmt.Errorf("error setting up routes: %w", err)
 	}

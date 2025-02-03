@@ -23,6 +23,7 @@ func NewMySQLRepository(db *gorm.DB) *Repository {
 func (r Repository) GetProcessByID(ctx context.Context, processID string) (videoprocessing.VideoProcessing, error) {
 	var videoProcessing ProcessMySQL
 	result := r.db.WithContext(ctx).
+		Preload("Files").
 		Where("process_id = ?", processID).
 		First(&videoProcessing)
 
@@ -37,11 +38,13 @@ func (r Repository) GetProcessByID(ctx context.Context, processID string) (video
 	return toDomain(videoProcessing), nil
 }
 
-func (r Repository) Create(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) error {
-	result := r.db.WithContext(ctx).Create(fromDomain(videoProcessing))
+func (r Repository) Create(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) (string, error) {
+	process := fromDomain(videoProcessing)
+
+	result := r.db.WithContext(ctx).Create(&process)
 	if result.Error != nil {
-		return result.Error
+		return "", result.Error
 	}
 
-	return nil
+	return process.ID, nil
 }
