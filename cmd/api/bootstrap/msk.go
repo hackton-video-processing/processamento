@@ -19,7 +19,7 @@ func createMSKConsumerRoutes(app *chi.Mux, catalog catalog.UseCase) error {
 	}
 
 	// Registrando a rota
-	app.Post("/consumer/process/video", videoProcessingHandler.VideoProcessing)
+	app.Post("/sink/process/video", videoProcessingHandler.VideoProcessing)
 
 	return nil
 }
