@@ -51,7 +51,7 @@ func CreateApplication() (*http.Server, error) {
 		Handler: router,
 	}
 
-	log.Printf("Server starting on port %s in %s appConfig...", appConfig.Port, appConfig.Env)
+	log.Printf("Server starting on port %s", appConfig.Port)
 
 	return server, nil
 }

@@ -1,17 +1,17 @@
 package config
 
 const (
-	User     = "USER"
+	User     = "MYSQL_USER"
 	Password = "PASSWORD"
 	Endpoint = "ENDPOINT"
 	Port     = "PORT"
 	DBName   = "DBNAME"
 
-	_defaultUser     = "user"
-	_defaultPassword = "password"
-	_defaultEndpoint = "endpoit"
-	_defaultPort     = "port"
-	_defaultDBName   = "db_name"
+	_defaultUser     = "admin"
+	_defaultPassword = "XPK39b73"
+	_defaultEndpoint = "video-processing-api-database.chcgmmmie0nu.us-east-1.rds.amazonaws.com"
+	_defaultPort     = "3306"
+	_defaultDBName   = "video_processing_api_database"
 )
 
 type MySQLConfig struct {

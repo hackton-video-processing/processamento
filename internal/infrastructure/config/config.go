@@ -7,7 +7,6 @@ import (
 )
 
 type AppConfig struct {
-	Env                   Environment
 	Port                  string
 	KafkaConfig           MSKConfig
 	S3Config              S3Config
@@ -17,7 +16,6 @@ type AppConfig struct {
 
 func LoadConfiguration() (AppConfig, error) {
 	return AppConfig{
-		Env:                   GetEnvironment(),
 		Port:                  GetPort(),
 		KafkaConfig:           NewMSKConfig(),
 		S3Config:              NewS3Config(),
@@ -50,35 +48,6 @@ func GetInt(env string, defaultValue int) int {
 	}
 	fmt.Println(fmt.Sprintf("%s: %d", env, intValue))
 	return intValue
-}
-
-func GetBool(env string, defaultValue bool) bool {
-	value := os.Getenv(env)
-	if value == "" {
-		return defaultValue
-	}
-
-	boolValue, err := strconv.ParseBool(value)
-	if err != nil {
-		return defaultValue
-	}
-
-	return boolValue
-}
-
-func GetEnvironment() Environment {
-	value := os.Getenv("ENVIRONMENT")
-	if value == "" {
-		fmt.Println(fmt.Sprintf("%s: %s", "ENVIRONMENT", "local"))
-		return LOCAL
-	}
-
-	if value == string(PROD) {
-		fmt.Println(fmt.Sprintf("%s: %s", "ENVIRONMENT", "production"))
-		return PROD
-	}
-	fmt.Println(fmt.Sprintf("%s: %s", "ENVIRONMENT", "local"))
-	return LOCAL
 }
 
 func GetPort() string {
