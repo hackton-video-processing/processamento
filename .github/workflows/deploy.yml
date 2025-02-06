@@ -56,7 +56,7 @@ jobs:
           sed -i "s|{{MAX_VIDEO_PROCESSING}}|${{ secrets.MAX_VIDEO_PROCESSING }}|g" ${{ env.ECS_TASK_DEFINITION }}
           sed -i "s|{{MYSQL_PORT}}|${{ secrets.MYSQL_PORT }}|g" ${{ env.ECS_TASK_DEFINITION }}
           sed -i "s|{{PASSWORD}}|${{ secrets.PASSWORD }}|g" ${{ env.ECS_TASK_DEFINITION }}
-          sed -i "s|{{DB_PASSWORD}}|${{ secrets.DB_PASSWORD }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{MYSQL_USER}}|${{ secrets.MYSQL_USER }}|g" ${{ env.ECS_TASK_DEFINITION }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
