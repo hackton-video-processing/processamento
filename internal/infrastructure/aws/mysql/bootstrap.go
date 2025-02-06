@@ -5,6 +5,7 @@ import (
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 func BootstrapMySQLRepository(config config.AppConfig) (*Repository, error) {
@@ -16,22 +17,14 @@ func BootstrapMySQLRepository(config config.AppConfig) (*Repository, error) {
 		config.MySQL.DBName,
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn))
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	sqlDB, err := db.DB()
-	if err != nil {
-		fmt.Println("Erro ao obter a instância de *sql.DB:", err)
-		return nil, fmt.Errorf("erro ao obter a instância de *sql.DB: %s", err)
-	}
-
-	err = sqlDB.Ping()
-	if err != nil {
-		return nil, fmt.Errorf("erro ao realizar ping no banco de dados: %s", err)
-	}
-	defer sqlDB.Close()
 
 	return NewMySQLRepository(db), nil
 }

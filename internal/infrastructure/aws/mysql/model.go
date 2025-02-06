@@ -12,10 +12,18 @@ type ProcessMySQL struct {
 	CreatedAt time.Time `gorm:"column:create_at;autoCreateTime"`
 }
 
+func (ProcessMySQL) TableName() string {
+	return "process"
+}
+
 type File struct {
 	ID        string `gorm:"column:file_id;primaryKey;not null"`
 	Name      string `gorm:"column:file_name;not null"`
 	ProcessID string `gorm:"column:process_id;index;not null"`
+}
+
+func (File) TableName() string {
+	return "file"
 }
 
 func fromDomain(videoProcess videoprocessing.VideoProcessing) *ProcessMySQL {

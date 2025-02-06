@@ -4,7 +4,7 @@ const (
 	User     = "MYSQL_USER"
 	Password = "PASSWORD"
 	Endpoint = "ENDPOINT"
-	Port     = "PORT"
+	Port     = "MYSQL_PORT"
 	DBName   = "DBNAME"
 
 	_defaultUser     = "user"

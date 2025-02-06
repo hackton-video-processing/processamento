@@ -31,7 +31,7 @@ func createAPIRoutes(app *chi.Mux, catalog catalog.UseCase) error {
 	}
 
 	// health check
-	app.Get("/api/health-check", healtchCheckHandler.HealthCheck)
+	app.Get("/", healtchCheckHandler.HealthCheck)
 
 	// endpoints
 	app.Post("/api/process", createProcessHandler.CreateProcess)
