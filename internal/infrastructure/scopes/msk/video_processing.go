@@ -1,6 +1,7 @@
 package msk
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -9,7 +10,7 @@ import (
 
 type (
 	videoProcessingUseCase interface {
-		Execute(request usecase.VideoProcessingRequest) error
+		Execute(context context.Context, request usecase.VideoProcessingRequest) error
 	}
 
 	VideoProcessingHandler struct {
@@ -31,7 +32,7 @@ func (v *VideoProcessingHandler) VideoProcessing(w http.ResponseWriter, r *http.
 		return
 	}
 
-	if err := v.videoProcessingUseCase.Execute(req); err != nil {
+	if err := v.videoProcessingUseCase.Execute(r.Context(), req); err != nil {
 		http.Error(w, "Error processing video: "+err.Error(), http.StatusInternalServerError)
 		return
 	}

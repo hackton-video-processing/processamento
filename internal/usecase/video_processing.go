@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"context"
 	"fmt"
+	"github.com/hackton-video-processing/processamento/internal/domain/videoprocessing"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/mysql"
 	"github.com/hackton-video-processing/processamento/pkg/zip"
 	"io"
@@ -23,7 +25,8 @@ type (
 	}
 
 	VideoProcessingRequest struct {
-		VideoKeys []string `json:"video_keys"`
+		Email       string `json:"email"`
+		ProcessedID string `json:"processed_id"`
 	}
 )
 
@@ -35,26 +38,29 @@ func NewVideoProcessing(s3Client *s3.S3Client, repository *mysql.Repository, max
 	}
 }
 
-func (v *VideoProcessing) Execute(req VideoProcessingRequest) error {
+func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingRequest) error {
 	var wg sync.WaitGroup
-	sem := make(chan struct{}, v.maxConcurrency) // Limita a 3 vídeos sendo processados simultaneamente
+	sem := make(chan struct{}, v.maxConcurrency)
 
-	for _, videoKey := range req.VideoKeys {
+	videoProcessing, err := v.repository.GetProcessByID(ctx, req.ProcessedID)
+	if err != nil {
+		return err
+	}
+
+	for _, videoKey := range videoProcessing.Files {
 		wg.Add(1)
-		go func(videoKey string) {
+		go func(videoKey videoprocessing.File) {
 			defer wg.Done()
-			sem <- struct{}{}        // Bloqueia se atingir o limite de concorrência
-			defer func() { <-sem }() // Libera o slot após processamento
+			sem <- struct{}{}
+			defer func() { <-sem }()
 
-			// Baixa o vídeo do S3
-			videoOutput, err := v.s3Client.GetVideo(videoKey)
+			videoOutput, err := v.s3Client.GetVideo(videoKey.Name)
 			if err != nil {
 				log.Printf("Erro ao baixar vídeo %s: %v", videoKey, err)
 				return
 			}
 
-			// Salva o vídeo localmente
-			localVideoPath := fmt.Sprintf("/tmp/%s", filepath.Base(videoKey))
+			localVideoPath := fmt.Sprintf("/tmp/%s", filepath.Base(videoKey.Name))
 			file, err := os.Create(localVideoPath)
 			if err != nil {
 				log.Printf("Erro ao criar arquivo local para %s: %v", videoKey, err)
@@ -63,23 +69,20 @@ func (v *VideoProcessing) Execute(req VideoProcessingRequest) error {
 			defer file.Close()
 			io.Copy(file, videoOutput.Body)
 
-			// Processa o vídeo (extrai frames)
-			outputDir := fmt.Sprintf("/tmp/frames_%s", filepath.Base(videoKey))
+			outputDir := fmt.Sprintf("/tmp/frames_%s", filepath.Base(videoKey.Name))
 			os.MkdirAll(outputDir, os.ModePerm)
 			if err := processVideo(localVideoPath, outputDir); err != nil {
 				log.Printf("Erro ao processar vídeo %s: %v", videoKey, err)
 				return
 			}
 
-			// Compacta os frames
 			zipPath := fmt.Sprintf("%s.zip", outputDir)
 			if err := zip.ZipDirectory(outputDir, zipPath); err != nil {
 				log.Printf("Erro ao compactar imagens de %s: %v", videoKey, err)
 				return
 			}
 
-			// Faz upload do ZIP para o S3
-			zipKey := fmt.Sprintf("processed/%s.zip", filepath.Base(videoKey))
+			zipKey := fmt.Sprintf("processed/%s.zip", filepath.Base(videoKey.Name))
 			if err := v.s3Client.UploadZippedVideo(zipKey, zipPath); err != nil {
 				log.Printf("Erro ao fazer upload do zip %s: %v", zipKey, err)
 				return
@@ -89,7 +92,7 @@ func (v *VideoProcessing) Execute(req VideoProcessingRequest) error {
 		}(videoKey)
 	}
 
-	wg.Wait() // Aguarda todos os vídeos serem processados
+	wg.Wait()
 	log.Println("Todos os vídeos foram processados com sucesso!")
 	return nil
 }
