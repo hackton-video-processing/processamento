@@ -12,6 +12,7 @@ type AppConfig struct {
 	S3Config              S3Config
 	MySQL                 MySQLConfig
 	VideoProcessingConfig VideoProcessingConfig
+	NotificationAPIConfig NotificationAPIConfig
 }
 
 func LoadConfiguration() (AppConfig, error) {
@@ -21,6 +22,7 @@ func LoadConfiguration() (AppConfig, error) {
 		S3Config:              NewS3Config(),
 		MySQL:                 NewMySQLConfig(),
 		VideoProcessingConfig: NewVideoProcessingConfig(),
+		NotificationAPIConfig: NewNotificationAPIConfig(),
 	}, nil
 }
 

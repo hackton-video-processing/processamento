@@ -1,0 +1,132 @@
+{
+	"info": {
+		"_postman_id": "2e4cb19c-dda7-4f20-8dd6-5f8a270bdf0e",
+		"name": "processamento",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36144472"
+	},
+	"item": [
+		{
+			"name": "kafka",
+			"item": [
+				{
+					"name": "sink",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"email\",\n    \"processed_id\": \"id\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/sink/process/video",
+							"protocol": "http",
+							"host": [
+								"video-processing-api-balancer-1232128618",
+								"us-east-1",
+								"elb",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"sink",
+								"process",
+								"video"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "get process",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/api/process/:id",
+					"protocol": "http",
+					"host": [
+						"video-processing-api-balancer-1232128618",
+						"us-east-1",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"api",
+						"process",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "7cb9457b-fa6d-494e-9c82-4131cd028083"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create process",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"files\": [\n        \"test_1\",\n        \"test_2\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/api/process",
+					"protocol": "http",
+					"host": [
+						"video-processing-api-balancer-1232128618",
+						"us-east-1",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"api",
+						"process"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/",
+					"protocol": "http",
+					"host": [
+						"video-processing-api-balancer-1232128618",
+						"us-east-1",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

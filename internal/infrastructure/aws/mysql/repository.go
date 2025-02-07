@@ -48,3 +48,20 @@ func (r Repository) Create(ctx context.Context, videoProcessing videoprocessing.
 
 	return process.ID, nil
 }
+
+func (r Repository) UpdateStatusByID(ctx context.Context, processID string, status string) error {
+	result := r.db.WithContext(ctx).
+		Model(&ProcessMySQL{}).
+		Where("process_id = ?", processID).
+		Update("status", status)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return videoprocessing.ErrVideoProcessingNotFound
+	}
+
+	return nil
+}

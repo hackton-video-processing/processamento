@@ -5,6 +5,7 @@ import (
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/s3"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
 	"github.com/hackton-video-processing/processamento/internal/usecase"
+	"github.com/hackton-video-processing/processamento/pkg/notificationapi"
 )
 
 type UseCase struct {
@@ -26,7 +27,12 @@ func (u UseCase) GetProcessByID() (*usecase.GetProcessByID, error) {
 }
 
 func (u UseCase) Process() (*usecase.VideoProcessing, error) {
-	return usecase.NewVideoProcessing(u.s3Client, u.Repository, u.appConfig.VideoProcessingConfig.MaxVideoProcessing), nil
+	notificationAPI, err := notificationapi.NewNotificationService(u.appConfig.NotificationAPIConfig.BaseURL, u.appConfig.NotificationAPIConfig.Endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return usecase.NewVideoProcessing(u.s3Client, u.Repository, u.appConfig, notificationAPI), nil
 }
 
 func New(appConfig config.AppConfig, s3Client *s3.S3Client, repository *mysql.Repository) UseCase {
