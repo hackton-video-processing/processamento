@@ -57,6 +57,14 @@ jobs:
           sed -i "s|{{MYSQL_PORT}}|${{ secrets.MYSQL_PORT }}|g" ${{ env.ECS_TASK_DEFINITION }}
           sed -i "s|{{PASSWORD}}|${{ secrets.PASSWORD }}|g" ${{ env.ECS_TASK_DEFINITION }}
           sed -i "s|{{MYSQL_USER}}|${{ secrets.MYSQL_USER }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{AWS_REGION}}|${{ secrets.AWS_REGION }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{AWS_ACCESS_KEY_ID}}|${{ secrets.AWS_ACCESS_KEY_ID }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{AWS_SECRET_ACCESS_KEY}}|${{ secrets.AWS_SECRET_ACCESS_KEY }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{DOWNLOAD_PATH}}|${{ secrets.DOWNLOAD_PATH }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{UPLOAD_PATH}}|${{ secrets.UPLOAD_PATH }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{S3_BUCKET}}|${{ secrets.S3_BUCKET }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{NOTIFICATION_API_BASE_URL}}|${{ secrets.NOTIFICATION_API_BASE_URL }}|g" ${{ env.ECS_TASK_DEFINITION }}
+          sed -i "s|{{NOTIFICATION_API_ENDPOINT}}|${{ secrets.NOTIFICATION_API_ENDPOINT }}|g" ${{ env.ECS_TASK_DEFINITION }}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def

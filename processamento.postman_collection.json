@@ -1,0 +1,132 @@
+{
+	"info": {
+		"_postman_id": "2e4cb19c-dda7-4f20-8dd6-5f8a270bdf0e",
+		"name": "processamento",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36144472"
+	},
+	"item": [
+		{
+			"name": "kafka",
+			"item": [
+				{
+					"name": "sink",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"teste@test.com\",\n    \"processed_id\": \"3bccccbe-ff15-4390-9a8b-59074bc39062\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/sink/process/video",
+							"protocol": "http",
+							"host": [
+								"video-processing-api-balancer-1232128618",
+								"us-east-1",
+								"elb",
+								"amazonaws",
+								"com"
+							],
+							"path": [
+								"sink",
+								"process",
+								"video"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "get process",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/api/process/:id",
+					"protocol": "http",
+					"host": [
+						"video-processing-api-balancer-1232128618",
+						"us-east-1",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"api",
+						"process",
+						":id"
+					],
+					"variable": [
+						{
+							"key": "id",
+							"value": "0126a838-0468-468e-a55d-a22380258dd1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create process",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"files\": [\n        \"Screen Recording 2025-02-07 at 5.24.26 PM.mov\",\n        \"Screen Recording 2025-02-07 at 6.06.58 AM.mov\"\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/api/process",
+					"protocol": "http",
+					"host": [
+						"video-processing-api-balancer-1232128618",
+						"us-east-1",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"api",
+						"process"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://video-processing-api-balancer-1232128618.us-east-1.elb.amazonaws.com/",
+					"protocol": "http",
+					"host": [
+						"video-processing-api-balancer-1232128618",
+						"us-east-1",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

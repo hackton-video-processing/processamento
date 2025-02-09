@@ -8,19 +8,19 @@ import (
 
 type AppConfig struct {
 	Port                  string
-	KafkaConfig           MSKConfig
 	S3Config              S3Config
 	MySQL                 MySQLConfig
 	VideoProcessingConfig VideoProcessingConfig
+	NotificationAPIConfig NotificationAPIConfig
 }
 
 func LoadConfiguration() (AppConfig, error) {
 	return AppConfig{
 		Port:                  GetPort(),
-		KafkaConfig:           NewMSKConfig(),
 		S3Config:              NewS3Config(),
 		MySQL:                 NewMySQLConfig(),
 		VideoProcessingConfig: NewVideoProcessingConfig(),
+		NotificationAPIConfig: NewNotificationAPIConfig(),
 	}, nil
 }
 
