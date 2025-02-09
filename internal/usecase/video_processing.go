@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hackton-video-processing/processamento/internal/domain/videoprocessing"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/mysql"
+	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/s3"
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
 	"github.com/hackton-video-processing/processamento/pkg/notificationapi"
 	"github.com/hackton-video-processing/processamento/pkg/zip"
@@ -14,8 +15,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
-
-	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/s3"
 )
 
 type (
@@ -126,6 +125,11 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 			return fmt.Errorf("failed to update status to failed: %w", err)
 		}
 
+		err = v.notificationAPI.SendNotification(req.Email, "Tivemos problema ao processar sua requisição")
+		if err != nil {
+			return fmt.Errorf("failed to send notification: %w", err)
+		}
+
 		return err
 	}
 
@@ -136,7 +140,7 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 			return fmt.Errorf("failed to update status to completed: %w", err)
 		}
 
-		err = v.notificationAPI.SendNotification(req.Email, "O vídeo já está disponível para download.")
+		err := v.notificationAPI.SendNotification(req.Email, "O vídeo já está disponível para download.")
 		if err != nil {
 			return fmt.Errorf("failed to send notification: %w", err)
 		}
