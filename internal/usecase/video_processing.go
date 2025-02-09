@@ -51,7 +51,7 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 		return err
 	}
 
-	err = v.repository.UpdateStatusByID(ctx, req.ProcessedID, "in_progress")
+	err = v.repository.UpdateStatusByID(ctx, videoProcessing.ID, "in_progress")
 	if err != nil {
 		log.Fatalf("failed to update status: %v", err)
 	}
@@ -59,7 +59,7 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 	fileProcessed := len(videoProcessing.Files)
 	for _, s3file := range videoProcessing.Files {
 		wg.Add(1)
-		go func(s3file videoprocessing.File) {
+		func(s3file videoprocessing.File) {
 			defer wg.Done()
 			sem <- struct{}{}
 			defer func() { <-sem }()
@@ -72,19 +72,31 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 				return
 			}
 
-			localVideoPath := fmt.Sprintf("/videos/%s", filepath.Base(s3file.Name))
+			localDir := "./videos" // Usando caminho relativo
+			if err := os.MkdirAll(localDir, os.ModePerm); err != nil {
+				log.Printf("Erro ao criar diretório %s: %v", localDir, err)
+				return
+			}
+
+			localVideoPath := fmt.Sprintf("%s/%s", localDir, filepath.Base(s3file.Name))
 			file, goErr := os.Create(localVideoPath)
 			if goErr != nil {
-				log.Printf("Erro ao criar arquivo local para %s: %v", file.Name, goErr)
+				log.Printf("Erro ao criar arquivo local para %s: %v", localVideoPath, goErr)
 				err = goErr
 				return
 			}
 			defer file.Close()
+
 			io.Copy(file, videoOutput.Body)
 
-			outputDir := fmt.Sprintf("/tmp/frames_%s", filepath.Base(s3file.Name))
-			os.MkdirAll(outputDir, os.ModePerm)
-			if goErr = processVideo(localVideoPath, outputDir); goErr != nil {
+			// Diretório temporário para salvar os frames processados
+			outputDir := fmt.Sprintf("./tmp/frames_%s", filepath.Base(s3file.Name))
+			if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
+				log.Printf("Erro ao criar diretório de saída para %s: %v", s3file.Name, err)
+				return
+			}
+
+			if goErr := processVideo(localVideoPath, outputDir); goErr != nil {
 				log.Printf("Erro ao processar vídeo %s: %v", s3file.Name, goErr)
 				err = goErr
 				return
@@ -146,6 +158,7 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 		}
 	}
 
+	log.Println("deu bom")
 	return nil
 }
 

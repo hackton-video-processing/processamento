@@ -1,6 +1,7 @@
 package s3
 
 import (
+	"log"
 	"os"
 
 	"github.com/hackton-video-processing/processamento/internal/infrastructure/config"
@@ -22,6 +23,8 @@ func NewS3Client(config config.AppConfig, client *s3.S3) *S3Client {
 }
 
 func (s *S3Client) GetVideo(filePath string) (*s3.GetObjectOutput, error) {
+	log.Println(s.s3Config.S3Bucket)
+	log.Println(filePath)
 	video, err := s.client.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(s.s3Config.S3Bucket),
 		Key:    aws.String(filePath),
