@@ -19,6 +19,7 @@ func (ProcessMySQL) TableName() string {
 type File struct {
 	ID        string `gorm:"column:file_id;primaryKey;not null"`
 	Name      string `gorm:"column:file_name;not null"`
+	Link      string `gorm:"column:link;"`
 	ProcessID string `gorm:"column:process_id;index;not null"`
 }
 
@@ -36,6 +37,7 @@ func fromDomain(videoProcess videoprocessing.VideoProcessing) *ProcessMySQL {
 		f := &File{
 			ID:        file.ID,
 			Name:      file.Name,
+			Link:      file.Link,
 			ProcessID: videoProcess.ID,
 		}
 
@@ -56,6 +58,7 @@ func toDomain(sql ProcessMySQL) videoprocessing.VideoProcessing {
 		f := videoprocessing.File{
 			ID:   file.ID,
 			Name: file.Name,
+			Link: file.Link,
 		}
 
 		process.Files = append(process.Files, f)

@@ -10,10 +10,10 @@ const (
 
 	_defaultS3Bucket        = "video-processing-api-bucket"
 	_defaultRegion          = "us-east-1"
-	_defaultAccessKey       = "access_key"
-	_defaultSecretAccessKey = "secret_accessKey"
-	_defaultDownloadPath    = "upload/"
-	_defaultUploadPath      = "download/"
+	_defaultAccessKey       = "AKIA6JKEX5A3K764RUOJ"
+	_defaultSecretAccessKey = "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"
+	_defaultDownloadPath    = "download/"
+	_defaultUploadPath      = "upload/"
 )
 
 type S3Config struct {

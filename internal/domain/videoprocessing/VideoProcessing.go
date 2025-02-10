@@ -9,9 +9,10 @@ import (
 type Status string
 
 var (
-	Created   Status = "created"
-	Prcessing Status = "prcessing"
-	Prcessed  Status = "prcessed"
+	Created    Status = "created"
+	Processing Status = "processing"
+	Processed  Status = "processed"
+	Failed     Status = "failed"
 
 	ErrVideoProcessingNotFound = errors.New("video processing not found")
 )
