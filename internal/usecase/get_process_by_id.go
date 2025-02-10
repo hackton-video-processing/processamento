@@ -4,16 +4,19 @@ import (
 	"context"
 	"errors"
 	"github.com/hackton-video-processing/processamento/internal/domain/videoprocessing"
-	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/mysql"
 )
 
 type GetProcessByID struct {
-	repository mysql.Repository
+	repository GetProcessRepository
 }
 
-func NewGetProcessByID(repository *mysql.Repository) *GetProcessByID {
+type GetProcessRepository interface {
+	GetProcessByID(ctx context.Context, processID string) (videoprocessing.VideoProcessing, error)
+}
+
+func NewGetProcessByID(repository GetProcessRepository) *GetProcessByID {
 	return &GetProcessByID{
-		repository: *repository,
+		repository: repository,
 	}
 }
 

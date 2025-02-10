@@ -3,16 +3,19 @@ package usecase
 import (
 	"context"
 	"github.com/hackton-video-processing/processamento/internal/domain/videoprocessing"
-	"github.com/hackton-video-processing/processamento/internal/infrastructure/aws/mysql"
 )
 
 type CreateProcess struct {
-	repository mysql.Repository
+	repository CreateProcessRepository
 }
 
-func NewCreateProcess(repository *mysql.Repository) *CreateProcess {
+type CreateProcessRepository interface {
+	Create(ctx context.Context, videoProcessing videoprocessing.VideoProcessing) (string, error)
+}
+
+func NewCreateProcess(repository CreateProcessRepository) *CreateProcess {
 	return &CreateProcess{
-		repository: *repository,
+		repository: repository,
 	}
 }
 

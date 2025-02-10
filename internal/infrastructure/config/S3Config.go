@@ -10,8 +10,8 @@ const (
 
 	_defaultS3Bucket        = "video-processing-api-bucket"
 	_defaultRegion          = "us-east-1"
-	_defaultAccessKey       = "AKIA6JKEX5A3K764RUOJ"
-	_defaultSecretAccessKey = "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"
+	_defaultAccessKey       = "access_key"
+	_defaultSecretAccessKey = "secret"
 	_defaultDownloadPath    = "download/"
 	_defaultUploadPath      = "upload/"
 )

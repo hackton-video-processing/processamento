@@ -7,11 +7,11 @@ const (
 	Port     = "MYSQL_PORT"
 	DBName   = "DBNAME"
 
-	_defaultUser     = "admin"
-	_defaultPassword = "XPK39b73"
-	_defaultEndpoint = "video-processing-api-database.chcgmmmie0nu.us-east-1.rds.amazonaws.com"
-	_defaultPort     = "3306"
-	_defaultDBName   = "video_processing_api_database"
+	_defaultUser     = "user"
+	_defaultPassword = "password"
+	_defaultEndpoint = "endpoint"
+	_defaultPort     = "port"
+	_defaultDBName   = "db_name"
 )
 
 type MySQLConfig struct {

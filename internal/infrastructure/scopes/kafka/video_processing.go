@@ -24,7 +24,6 @@ func NewVideoProcessingHandler(videoProcessingUseCase videoProcessingUseCase) *V
 	}
 }
 
-// VideoProcessing processa os vídeos
 func (v *VideoProcessingHandler) VideoProcessing(w http.ResponseWriter, r *http.Request) {
 	var req usecase.VideoProcessingRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
