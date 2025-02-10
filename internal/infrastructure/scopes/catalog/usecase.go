@@ -9,9 +9,9 @@ import (
 )
 
 type UseCase struct {
-	appConfig config.AppConfig
-	s3Client  *s3.S3Client
-	*mysql.Repository
+	appConfig  config.AppConfig
+	s3Client   *s3.S3Client
+	repository *mysql.Repository
 }
 
 func (u UseCase) Health() (*usecase.HealthCheck, error) {
@@ -19,11 +19,11 @@ func (u UseCase) Health() (*usecase.HealthCheck, error) {
 }
 
 func (u UseCase) CreateProcess() (*usecase.CreateProcess, error) {
-	return usecase.NewCreateProcess(u.Repository), nil
+	return usecase.NewCreateProcess(u.repository), nil
 }
 
 func (u UseCase) GetProcessByID() (*usecase.GetProcessByID, error) {
-	return usecase.NewGetProcessByID(u.Repository), nil
+	return usecase.NewGetProcessByID(u.repository), nil
 }
 
 func (u UseCase) Process() (*usecase.VideoProcessing, error) {
@@ -32,13 +32,13 @@ func (u UseCase) Process() (*usecase.VideoProcessing, error) {
 		return nil, err
 	}
 
-	return usecase.NewVideoProcessing(u.s3Client, u.Repository, u.appConfig, notificationAPI), nil
+	return usecase.NewVideoProcessing(u.s3Client, u.repository, u.appConfig, notificationAPI), nil
 }
 
 func New(appConfig config.AppConfig, s3Client *s3.S3Client, repository *mysql.Repository) UseCase {
 	return UseCase{
 		appConfig:  appConfig,
 		s3Client:   s3Client,
-		Repository: repository,
+		repository: repository,
 	}
 }

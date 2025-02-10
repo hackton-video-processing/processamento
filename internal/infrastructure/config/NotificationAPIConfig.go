@@ -4,8 +4,8 @@ const (
 	BaseURL        = "NOTIFICATION_API_BASE_URL"
 	NotifyEndpoint = "NOTIFICATION_API_ENDPOINT"
 
-	_defaultBaseURL        = "http://18.234.220.7:80"
-	_defaultNotifyEndpoint = "v1/notification"
+	_defaultBaseURL        = "url"
+	_defaultNotifyEndpoint = "endpoint"
 )
 
 type NotificationAPIConfig struct {
