@@ -49,11 +49,28 @@ func (r Repository) Create(ctx context.Context, videoProcessing videoprocessing.
 	return process.ID, nil
 }
 
-func (r Repository) UpdateStatusByID(ctx context.Context, processID string, status string) error {
+func (r Repository) UpdateStatusByProcessID(ctx context.Context, processID, status string) error {
 	result := r.db.WithContext(ctx).
 		Model(&ProcessMySQL{}).
 		Where("process_id = ?", processID).
 		Update("status", status)
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return videoprocessing.ErrVideoProcessingNotFound
+	}
+
+	return nil
+}
+
+func (r Repository) UpdateFileByID(ctx context.Context, processID, link string) error {
+	result := r.db.WithContext(ctx).
+		Model(&File{}).
+		Where("file_id = ?", processID).
+		Update("link", link)
 
 	if result.Error != nil {
 		return result.Error

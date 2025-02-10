@@ -27,7 +27,7 @@ type (
 
 	VideoProcessingRequest struct {
 		Email       string `json:"email"`
-		ProcessedID string `json:"processed_id"`
+		ProcessedID string `json:"processId"`
 	}
 )
 
@@ -51,114 +51,123 @@ func (v *VideoProcessing) Execute(ctx context.Context, req VideoProcessingReques
 		return err
 	}
 
-	err = v.repository.UpdateStatusByID(ctx, videoProcessing.ID, "in_progress")
+	err = v.repository.UpdateStatusByProcessID(ctx, videoProcessing.ID, string(videoprocessing.Processing))
 	if err != nil {
-		log.Fatalf("failed to update status: %v", err)
+		log.Fatalf("error updating status: %v", err)
 	}
 
 	fileProcessed := len(videoProcessing.Files)
-	for _, s3file := range videoProcessing.Files {
+	for _, videoProcessingFile := range videoProcessing.Files {
 		wg.Add(1)
-		func(s3file videoprocessing.File) {
+		func(videoProcessingFile videoprocessing.File) {
 			defer wg.Done()
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
-			uploadedPath := fmt.Sprintf("%s%s", v.appConfig.S3Config.UploadPath, s3file.Name)
-			videoOutput, goErr := v.s3Client.GetVideo(uploadedPath)
+			s3uploadedPath := fmt.Sprintf("%s%s", v.appConfig.S3Config.UploadPath, videoProcessingFile.Name)
+			s3File, goErr := v.s3Client.GetVideo(s3uploadedPath)
 			if goErr != nil {
-				log.Printf("Erro ao baixar vídeo %s: %v", s3file.Name, goErr)
+				log.Printf("error downloading S3 localFile %s: %v", videoProcessingFile.Name, goErr)
 				err = goErr
 				return
 			}
 
-			localDir := "./videos" // Usando caminho relativo
-			if err := os.MkdirAll(localDir, os.ModePerm); err != nil {
-				log.Printf("Erro ao criar diretório %s: %v", localDir, err)
+			localDir := "./videos"
+			if goErr = os.MkdirAll(localDir, os.ModePerm); err != nil {
+				log.Printf("error creating local dir %s: %v", localDir, goErr)
 				return
 			}
 
-			localVideoPath := fmt.Sprintf("%s/%s", localDir, filepath.Base(s3file.Name))
-			file, goErr := os.Create(localVideoPath)
+			localVideoPath := fmt.Sprintf("%s/%s", localDir, filepath.Base(videoProcessingFile.Name))
+			localFile, goErr := os.Create(localVideoPath)
 			if goErr != nil {
-				log.Printf("Erro ao criar arquivo local para %s: %v", localVideoPath, goErr)
+				log.Printf("error creating local localFile for %s: %v", localVideoPath, goErr)
 				err = goErr
 				return
 			}
-			defer file.Close()
+			defer localFile.Close()
 
-			io.Copy(file, videoOutput.Body)
+			io.Copy(localFile, s3File.Body)
 
-			// Diretório temporário para salvar os frames processados
-			outputDir := fmt.Sprintf("./tmp/frames_%s", filepath.Base(s3file.Name))
-			if err := os.MkdirAll(outputDir, os.ModePerm); err != nil {
-				log.Printf("Erro ao criar diretório de saída para %s: %v", s3file.Name, err)
+			tempOutputDir := fmt.Sprintf("./tmp/frames_%s", filepath.Base(videoProcessingFile.Name))
+			if err := os.MkdirAll(tempOutputDir, os.ModePerm); err != nil {
+				log.Printf("error creating temp output dir %s: %v", videoProcessingFile.Name, err)
 				return
 			}
 
-			if goErr := processVideo(localVideoPath, outputDir); goErr != nil {
-				log.Printf("Erro ao processar vídeo %s: %v", s3file.Name, goErr)
-				err = goErr
-				return
-			}
-
-			zipPath := fmt.Sprintf("%s.zip", outputDir)
-			if goErr = zip.ZipDirectory(outputDir, zipPath); goErr != nil {
-				log.Printf("Erro ao compactar imagens de %s: %v", s3file.Name, goErr)
+			if goErr = processVideo(localVideoPath, tempOutputDir); goErr != nil {
+				log.Printf("error processing video %s: %v", videoProcessingFile.Name, goErr)
 				err = goErr
 				return
 			}
 
-			destinationPath := fmt.Sprintf("%s%s.zip", v.appConfig.S3Config.DownloadPath, filepath.Base(s3file.Name))
-			if goErr = v.s3Client.UploadZippedVideo(destinationPath, zipPath); goErr != nil {
-				log.Printf("Erro ao fazer upload do zip %s: %v", destinationPath, goErr)
+			zipPath := fmt.Sprintf("%s.zip", tempOutputDir)
+			if goErr = zip.ZipDirectory(tempOutputDir, zipPath); goErr != nil {
+				log.Printf("error zipping video %s: %v", videoProcessingFile.Name, goErr)
 				err = goErr
 				return
 			}
 
-			if goErr = v.s3Client.DeleteVideo(s3file.Name); goErr != nil {
-				log.Printf("Erro ao excluir vídeo original %s: %v", s3file.Name, goErr)
+			s3DestinationPath := fmt.Sprintf("%s%s.zip", v.appConfig.S3Config.DownloadPath, filepath.Base(videoProcessingFile.Name))
+			if goErr = v.s3Client.UploadZippedVideo(s3DestinationPath, zipPath); goErr != nil {
+				log.Printf("error uploading zip file %s: %v", s3DestinationPath, goErr)
 				err = goErr
 				return
 			}
 
-			log.Printf("Processamento de %s concluído com sucesso e vídeo original excluído", s3file.Name)
+			goErr = v.repository.UpdateFileByID(ctx, videoProcessingFile.ID, fmt.Sprintf(
+				"https://%s.s3.%s.amazonaws.com/%s%s.zip",
+				v.appConfig.S3Config.S3Bucket,
+				v.appConfig.S3Config.Region,
+				v.appConfig.S3Config.DownloadPath,
+				videoProcessingFile.Name))
+			if goErr != nil {
+				log.Printf("error updating status: %v", goErr)
+				err = goErr
+				return
+			}
+
+			if goErr = v.s3Client.DeleteVideo(videoProcessingFile.Name); goErr != nil {
+				log.Printf("error deleting original s3 video %s: %v", videoProcessingFile.Name, goErr)
+				err = goErr
+				return
+			}
 
 			fileProcessed++
-		}(s3file)
+		}(videoProcessingFile)
 	}
 
 	wg.Wait()
 
 	if err != nil {
-		log.Println("Nem todos os vídeos foram processados com sucesso.")
-		err = v.repository.UpdateStatusByID(ctx, req.ProcessedID, "failed")
-		if err != nil {
-			return fmt.Errorf("failed to update status to failed: %w", err)
+		log.Println("one or more errors occurred.")
+
+		err2 := v.repository.UpdateStatusByProcessID(ctx, req.ProcessedID, string(videoprocessing.Failed))
+		if err2 != nil {
+			return fmt.Errorf("error updating status: %w", err2)
 		}
 
-		err = v.notificationAPI.SendNotification(req.Email, "Tivemos problema ao processar sua requisição")
-		if err != nil {
-			return fmt.Errorf("failed to send notification: %w", err)
+		err2 = v.notificationAPI.SendNotification(req.Email, "Tivemos problema ao processar sua requisição")
+		if err2 != nil {
+			return fmt.Errorf("error sending notification: %w", err2)
 		}
 
 		return err
 	}
 
 	if fileProcessed == len(videoProcessing.Files) {
-		log.Println("Todos os vídeos foram processados com sucesso!")
-		err = v.repository.UpdateStatusByID(ctx, req.ProcessedID, "completed")
+		err = v.repository.UpdateStatusByProcessID(ctx, req.ProcessedID, string(videoprocessing.Processed))
 		if err != nil {
-			return fmt.Errorf("failed to update status to completed: %w", err)
+			return fmt.Errorf("error updating status: %w", err)
 		}
 
-		err := v.notificationAPI.SendNotification(req.Email, "O vídeo já está disponível para download.")
+		err = v.notificationAPI.SendNotification(req.Email, "O vídeo já está disponível para download.")
 		if err != nil {
-			return fmt.Errorf("failed to send notification: %w", err)
+			return fmt.Errorf("error sending notification: %w", err)
 		}
 	}
 
-	log.Println("deu bom")
+	log.Println("processing has been done successful")
 	return nil
 }
 
